@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fecha Estelar en Tiempo Real</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #232624 0%, #000d04 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: black;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 550px;
+            width: 100%;
+        }
+        
+        .title {
+            text-align: center;
+            color: #ffffff;
+            font-size: 28px;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #ffffff;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+        
+        .status {
+            text-align: center;
+            background: linear-gradient(135deg, #2d2e2d 0%, #000301 100%);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-size: 13px;
+            margin-bottom: 25px;
+            display: inline-block;
+        }
+        
+        .live-indicator {
+            color: #00ff88;
+            font-weight: bold;
+        }
+        
+        .result-section {
+            padding: 40px 30px;
+	    background: linear-gradient(135deg, #121212 0%, #121212d 100%);
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        
+        .result-title {
+            color: white;
+            font-size: 16px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        
+        .result-value {
+            color: white;
+            font-size: 48px;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 4px;
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .details-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .detail-item {
+            background: rgba(255,255,255,0.15);
+            padding: 10px 15px;
+            border-radius: 6px;
+            color: #f0f0f0;
+            font-size: 15px;
+        }
+        
+        .detail-label {
+            color: #ffffff;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+        
+        .detail-value {
+            color: white;
+            font-weight: 600;
+        }
+        
+        .controls {
+            background: #121212;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .controls-title {
+            color: #ffffff;
+            font-size: 14px;
+            margin-bottom: 15px;
+            font-weight: 600;
+            text-align: center;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .label {
+            display: block;
+            color: #ffffff;
+            font-size: 14px;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+        
+        .input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: border-color 0.3s;
+        }
+        
+        .input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .button {
+            flex: 1;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .button:hover {
+            transform: translateY(-2px);
+        }
+        
+        .button-secondary {
+            background: #6c757d;
+        }
+        
+        .footer {
+            text-align: center;
+            color: #ffffff;
+            font-size: 12px;
+            margin-top: 15px;
+        }
+        
+        .time-display {
+            text-align: center;
+            color: #666;
+            font-size: 13px;
+            margin-bottom: 15px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">Fecha Estelar en Tiempo Real</h1>
+        <p class="subtitle">Formato: YYYY.DDD.MMMM</p>
+        
+        <div style="text-align: center;">
+            <span class="status">
+                <span class="live-indicator">🔴 LIVE</span> - Actualizándose cada segundo
+            </span>
+        </div>
+        
+        <div class="result-section">
+            <div class="result-title">Tu Fecha Estelar Actual:</div>
+            <div class="result-value" id="fechaEstelar">----</div>
+            <div class="details-container" id="detalles"></div>
+        </div>
+        
+        <div class="time-display" id="horaActual"></div>
+        
+        <div class="controls">
+            <div class="controls-title">Personalizar Fecha y Hora (opcional)</div>
+            
+            <div class="form-group">
+                <label class="label">Fecha:</label>
+                <input type="date" id="fecha" class="input">
+            </div>
+            
+            <div class="form-group">
+                <label class="label">Hora:</label>
+                <input type="time" id="hora" class="input">
+            </div>
+            
+            <div class="button-group">
+                <button class="button" onclick="usarHoraActual()">Usar Hora Actual</button>
+                <button class="button button-secondary" onclick="limpiarPersonalizacion()">Limpiar</button>
+            </div>
+        </div>
+        
+        <div class="footer">
+            Coordenada temporal personalizada - Colombia -05 timezone
+        </div>
+    </div>
+    
+    <script>
+        const fechaInput = document.getElementById('fecha');
+        const horaInput = document.getElementById('hora');
+        const detallesDiv = document.getElementById('detalles');
+        let actualizandoEnTiempoReal = true;
+        
+        function establecerHoraActual() {
+            const ahora = new Date();
+            const año = ahora.getFullYear();
+            const mes = ahora.getMonth() + 1;
+            const dia = ahora.getDate();
+            const horas = ahora.getHours();
+            const minutos = ahora.getMinutes();
+            
+            fechaInput.value = `${año}-${mes.toString().padStart(2, '0')}-${dia.toString().padStart(2, '0')}`;
+            horaInput.value = `${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}`;
+            
+            actualizarFechaEstelar();
+        }
+        
+        function calcularDiaDelAño(fecha) {
+            const inicioDelAño = new Date(fecha.getFullYear(), 0, 0);
+            const diferencia = fecha - inicioDelAño;
+            const unDia = 1000 * 60 * 60 * 24;
+            return Math.floor(diferencia / unDia);
+        }
+        
+        function actualizarFechaEstelar() {
+            const fechaVal = fechaInput.value;
+            const horaVal = horaInput.value;
+            
+            if (!fechaVal || !horaVal) {
+                return;
+            }
+            
+            const [añoStr, mesStr, diaStr] = fechaVal.split('-');
+            const [horasStr, minutosStr] = horaVal.split(':');
+            
+            const fechaObj = new Date(añoStr, mesStr - 1, diaStr, horasStr, minutosStr);
+            const año = fechaObj.getFullYear();
+            
+            const diaDelAño = calcularDiaDelAño(fechaObj);
+            
+            const horas = fechaObj.getHours();
+            const minutos = fechaObj.getMinutes();
+            const segundos = fechaObj.getSeconds();
+            const minutosTotales = horas * 60 + minutos;
+            
+            const fechaEstelar = 
+                año + '.' + 
+                diaDelAño.toString().padStart(3, '0') + '.' + 
+                minutosTotales.toString().padStart(4, '0');
+            
+            document.getElementById('fechaEstelar').textContent = fechaEstelar;
+            
+            // Crear elementos HTML correctamente (no como texto)
+            detallesDiv.innerHTML = '';
+            
+            const detail1 = document.createElement('div');
+            detail1.className = 'detail-item';
+            detail1.innerHTML = '<span class="detail-label">Año:</span> <span class="detail-value">' + año + '</span>';
+            
+            const detail2 = document.createElement('div');
+            detail2.className = 'detail-item';
+            detail2.innerHTML = '<span class="detail-label">Día del año:</span> <span class="detail-value">' + diaDelAño + '</span>';
+            
+            const detail3 = document.createElement('div');
+            detail3.className = 'detail-item';
+            detail3.innerHTML = '<span class="detail-label">Minutos del día:</span> <span class="detail-value">' + minutosTotales + '</span>';
+            
+            detallesDiv.appendChild(detail1);
+            detallesDiv.appendChild(detail2);
+            detallesDiv.appendChild(detail3);
+            
+            // Mostrar hora actual formatada
+            const horaFormato = fechaObj.toLocaleString('es-CO', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            document.getElementById('horaActual').textContent = horaFormato;
+        }
+        
+        function usarHoraActual() {
+            actualizandoEnTiempoReal = true;
+            establecerHoraActual();
+        }
+        
+        function limpiarPersonalizacion() {
+            fechaInput.value = '';
+            horaInput.value = '';
+            actualizandoEnTiempoReal = true;
+            establecerHoraActual();
+        }
+        
+        function iniciarActualizacionTiempoReal() {
+            actualizarFechaEstelar();
+            
+            setInterval(() => {
+                if (actualizandoEnTiempoReal) {
+                    const ahora = new Date();
+                    const año = ahora.getFullYear();
+                    const mes = ahora.getMonth() + 1;
+                    const dia = ahora.getDate();
+                    const horas = ahora.getHours();
+                    const minutos = ahora.getMinutes();
+                    
+                    fechaInput.value = `${año}-${mes.toString().padStart(2, '0')}-${dia.toString().padStart(2, '0')}`;
+                    horaInput.value = `${horas.toString().padStart(2, '0')}:${minutos.toString().padStart(2, '0')}`;
+                    
+                    actualizarFechaEstelar();
+                }
+            }, 1000);
+        }
+        
+        fechaInput.addEventListener('change', () => {
+            actualizandoEnTiempoReal = false;
+            actualizarFechaEstelar();
+        });
+        
+        horaInput.addEventListener('change', () => {
+            actualizandoEnTiempoReal = false;
+            actualizarFechaEstelar();
+        });
+        
+        window.onload = function() {
+            establecerHoraActual();
+            iniciarActualizacionTiempoReal();
+        };
+    </script>
+</body>
+</html>
