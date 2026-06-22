@@ -1,2 +1,2 @@
 # Stardate
-My star date based on earth time
+My stardate based on earth time
